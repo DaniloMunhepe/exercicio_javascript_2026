@@ -133,22 +133,22 @@
 // }
 
 // EXERCICIO 8
-let numero = 1;
-let par = 0;
-let impar = 0;
+// let numero = 1;
+// let par = 0;
+// let impar = 0;
 
-while (numero <= 50) {
-  if (numero % 2 === 0) {
-    par++;
-  } else {
-    impar++;
-  }
+// while (numero <= 50) {
+//   if (numero % 2 === 0) {
+//     par++;
+//   } else {
+//     impar++;
+//   }
 
-  numero++;
-}
+//   numero++;
+// }
 
-console.log(par);
-console.log(impar);
+// console.log(par);
+// console.log(impar);
 
 // EXERCICIO 9
 // const carrinho = {
