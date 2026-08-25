@@ -1,8 +1,10 @@
-import http from "http";
-
-const db = { users: [], posts: [] };
-// name, age, country
-// posts: { title, description, published: boolean, userId }
+import http from 'http';
+import {
+  createUser,
+  findUserById,
+  findUsers,
+} from './controllers/user.controller.js';
+import { db } from './utils/db.js';
 
 const server = http.createServer((req, res) => {
   // const url = req.url
@@ -10,64 +12,34 @@ const server = http.createServer((req, res) => {
   const { url, method } = req;
   let statusCode = 200;
   let responseBody = null;
-  let urlParts = url.split("/");
+  let urlParts = url.split('/');
 
   switch (req.method) {
-    case "POST":
-      if (url === "/api/users") {
-        const bodyParts = [];
-        req.on("data", (chunk) => {
-          bodyParts.push(chunk);
-        });
-
-        req.on("end", () => {
-          const content = Buffer.concat(bodyParts).toString();
-          const body = JSON.parse(content);
-          const user = {
-            ...body,
-            id: db.users.length + 1,
-          };
-
-          db.users.push(user);
-          responseBody = user;
-          statusCode = 201;
-
-          res.writeHead(statusCode, { "Content-Type": "application/json" });
-          res.end(JSON.stringify(responseBody));
-        });
-      }
-      return;
-    case "GET":
-      if (url === "/api/users") {
-        responseBody = db.users;
+    case 'POST':
+      if (url === '/api/users') return createUser(req, res);
+    case 'GET':
+      if (url === '/api/users') {
+        return findUsers(req, res);
       } else if (urlParts.length > 3) {
-        const id = Number(urlParts.at(-1));
-        const user = db.users.find((user) => user.id === id);
-
-        if (user) {
-          responseBody = user;
-        } else {
-          responseBody = { message: `User with ${id} was not found` };
-          statusCode = 404;
-        }
+        return findUserById(req, res);
       }
       break;
-    case "PATCH":
+    case 'PATCH':
       // 1. Ler o id de forma dinamica na url
       // 2. Encontrar um object dentro de um array, .find()
       // 3. Como modificar um objecto dentro de um array
 
       // 200 - retornar o dados actualizado
-      if (urlParts[1] === "api" && urlParts[2] === "users") {
+      if (urlParts[1] === 'api' && urlParts[2] === 'users') {
         const id = Number(urlParts[3]);
 
         const bodyParts = [];
 
-        req.on("data", (chunk) => {
+        req.on('data', (chunk) => {
           bodyParts.push(chunk);
         });
 
-        req.on("end", () => {
+        req.on('end', () => {
           const content = Buffer.concat(bodyParts).toString();
 
           const body = JSON.parse(content);
@@ -76,13 +48,13 @@ const server = http.createServer((req, res) => {
 
           if (!user) {
             responseBody = {
-              message: "Usuário não encontrado",
+              message: 'Usuário não encontrado',
             };
 
             statusCode = 404;
 
             res.writeHead(statusCode, {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
             });
 
             res.end(JSON.stringify(responseBody));
@@ -96,7 +68,7 @@ const server = http.createServer((req, res) => {
           statusCode = 200;
 
           res.writeHead(statusCode, {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           });
 
           res.end(JSON.stringify(responseBody));
@@ -106,13 +78,13 @@ const server = http.createServer((req, res) => {
       }
       break;
 
-    case "DELETE":
+    case 'DELETE':
       // 1. Ler o id de forma dinamica na url
       // 2. Remover um object de um array, filter()
 
       // 204 - retornar undefined
 
-      if (urlParts[1] === "api" && urlParts[2] === "users") {
+      if (urlParts[1] === 'api' && urlParts[2] === 'users') {
         const id = Number(urlParts[3]);
 
         db.users = db.users.filter((user) => user.id !== id);
@@ -129,7 +101,7 @@ const server = http.createServer((req, res) => {
     default:
   }
 
-  res.writeHead(statusCode, { "Content-Type": "application/json" });
+  res.writeHead(statusCode, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(responseBody));
 
   console.log(req.method, req.url);
