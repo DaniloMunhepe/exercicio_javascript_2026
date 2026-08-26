@@ -124,3 +124,9 @@ server.listen(port, () => {
 // GET /api/posts/123 - 200
 // PATCH /api/posts/123 - 200
 // DELETE /api/posts/123 - 204
+
+/**
+ * Mover a funcionalidade de atualizar e deletar usuario para o user controller
+ * Criar um controller para posts que faz CRUD
+ * SQLite
+ */
