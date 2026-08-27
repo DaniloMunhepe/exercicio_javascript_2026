@@ -1,32 +1,31 @@
-import http from "http";
+import http from "http"
 import {
   createUser,
   findUserById,
   findUsers,
   updateUser,
   deleteUser,
-} from "./controllers/user.controller.js";
-
-import { db } from "./utils/db.js";
+} from "./controllers/user.controller.js"
+import { db } from "./utils/db.js"
 
 const server = http.createServer((req, res) => {
   // const url = req.url
   // const method = req.method
-  const { url, method } = req;
-  let statusCode = 200;
-  let responseBody = null;
-  let urlParts = url.split("/");
+  const { url, method } = req
+  let statusCode = 200
+  let responseBody = null
+  let urlParts = url.split("/")
 
   switch (req.method) {
     case "POST":
-      if (url === "/api/users") return createUser(req, res);
+      if (url === "/api/users") return createUser(req, res)
     case "GET":
       if (url === "/api/users") {
-        return findUsers(req, res);
+        return findUsers(req, res)
       } else if (urlParts.length > 3) {
-        return findUserById(req, res);
+        return findUserById(req, res)
       }
-      break;
+      break
 
     case "PATCH":
       // 1. Ler o id de forma dinamica na url
@@ -34,10 +33,10 @@ const server = http.createServer((req, res) => {
       // 3. Como modificar um objecto dentro de um array
       // 200 - retornar o dados actualizado
       if (urlParts[1] === "api" && urlParts[2] === "users") {
-        return updateUser(req, res);
+        return updateUser(req, res)
       }
 
-      break;
+      break
 
     case "DELETE":
       // 1. Ler o id de forma dinamica na url
@@ -45,23 +44,23 @@ const server = http.createServer((req, res) => {
 
       // 204 - retornar undefined
       if (urlParts[1] === "api" && urlParts[2] === "users") {
-        return deleteUser(req, res);
+        return deleteUser(req, res)
       }
-      break;
+      break
     default:
   }
 
-  res.writeHead(statusCode, { "Content-Type": "application/json" });
-  res.end(JSON.stringify(responseBody));
+  res.writeHead(statusCode, { "Content-Type": "application/json" })
+  res.end(JSON.stringify(responseBody))
 
-  console.log(req.method, req.url);
-});
+  console.log(req.method, req.url)
+})
 
-const port = 8000;
+const port = 8000
 
 server.listen(port, () => {
-  console.info(`Server is waiting on http://localhost:${port}`);
-});
+  console.info(`Server is waiting on http://localhost:${port}`)
+})
 
 // GET, POST, PATCH, DELETE
 
