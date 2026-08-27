@@ -1,40 +1,49 @@
-import { db } from '../utils/db.js';
+import { db } from "../utils/db.js";
 
 export function createUser(req, res) {
   const { url, method } = req;
   let statusCode = 200;
   let responseBody = null;
-  let urlParts = url.split('/');
+  let urlParts = url.split("/");
 
   const bodyParts = [];
-  req.on('data', (chunk) => {
+  req.on("data", (chunk) => {
     bodyParts.push(chunk);
   });
 
-  req.on('end', () => {
+  req.on("end", () => {
     const content = Buffer.concat(bodyParts).toString();
     const body = JSON.parse(content);
-    const user = {
-      ...body,
-      id: db.users.length + 1,
-    };
 
-    db.users.push(user);
+    const statement = db.prepare(
+      `INSERT INTO users (name, age, country) VALUES (?,?,?)`,
+    );
+
+    const result = statement.run(body.name, body.age, body.country);
+
+    const user = db
+      .prepare("SELECT * FROM users WHERE id = ?")
+      .get(result.lastInsertRowid);
+
     responseBody = user;
     statusCode = 201;
 
-    res.writeHead(statusCode, { 'Content-Type': 'application/json' });
+    res.writeHead(statusCode, { "Content-Type": "application/json" });
     res.end(JSON.stringify(responseBody));
   });
 }
 
+//BUSCAR O UTILIZADOR COM SQL
 export function findUsers(req, res) {
-  res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(db.users));
+  const users = db.prepare("SELECT * FROM users").all();
+
+  res.writeHead(200, { "Content-Type": "application/json" });
+
+  res.end(JSON.stringify(users));
 }
 
 export function findUserById(req, res) {
-  const id = Number(req.url.split('/').at(-1));
+  const id = Number(req.url.split("/").at(-1));
   const user = db.users.find((user) => user.id === id);
   let statusCode = 200;
   let responseBody = null;
@@ -45,6 +54,70 @@ export function findUserById(req, res) {
     responseBody = { message: `User with ${id} was not found` };
     statusCode = 404;
   }
-  res.writeHead(statusCode, { 'Content-Type': 'application/json' });
+  res.writeHead(statusCode, { "Content-Type": "application/json" });
   res.end(JSON.stringify(responseBody));
+}
+
+//UPDATE
+export function updateUser(req, res) {
+  const id = Number(req.url.split("/").at(-1));
+  let responseBody = null;
+
+  const bodyParts = [];
+
+  req.on("data", (chunk) => {
+    bodyParts.push(chunk);
+  });
+
+  req.on("end", () => {
+    const content = Buffer.concat(bodyParts).toString();
+
+    const body = JSON.parse(content);
+
+    const user = db.users.find((user) => user.id === id);
+
+    if (!user) {
+      responseBody = {
+        message: "Usuário não encontrado",
+      };
+
+      let statusCode = 404;
+
+      res.writeHead(statusCode, {
+        "Content-Type": "application/json",
+      });
+
+      res.end(JSON.stringify(responseBody));
+
+      return;
+    }
+
+    Object.assign(user, body);
+
+    let responseBody = user;
+    let statusCode = 200;
+
+    res.writeHead(statusCode, {
+      "Content-Type": "application/json",
+    });
+
+    res.end(JSON.stringify(responseBody));
+  });
+
+  return;
+}
+
+//E DELETE
+export function deleteUser(req, res) {
+  const id = Number(req.url.split("/").at(-1));
+
+  db.users = db.users.filter((user) => user.id !== id);
+
+  let statusCode = 204;
+  let responseBody = undefined;
+
+  res.writeHead(statusCode);
+  res.end();
+
+  return;
 }
