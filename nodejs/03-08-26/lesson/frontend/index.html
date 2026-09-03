@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Postagens com API Rest</title>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <h1>Posts</h1>
+
+    <form id="postForm">
+      <input type="text" id="title" placeholder="Titulo" required />
+
+      <textarea id="description" placeholder="Descrição" required></textarea>
+
+      <input type="date" id="publishedAt" required />
+
+      <input type="number" id="userId" placeholder="id do usuário" required />
+
+      <button type="submit">Criar Post</button>
+    </form>
+
+    <hr />
+
+    <h2>Posts</h2>
+
+    <div id="posts"></div>
+
+    <script src="main.js"></script>
+  </body>
+</html>

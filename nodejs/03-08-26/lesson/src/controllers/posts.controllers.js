@@ -1,7 +1,7 @@
 import { db } from "../utils/db.js";
 
 //CRIAR
-export function createUser(req, res) {
+export function createPosts(req, res) {
   const { url, method } = req;
   let statusCode = 200;
   let responseBody = null;
@@ -17,16 +17,21 @@ export function createUser(req, res) {
     const body = JSON.parse(content);
 
     const statement = db.prepare(
-      `INSERT INTO users (name, age, country) VALUES (?,?,?)`,
+      `INSERT INTO posts (title, description, publishedAt, userId) VALUES (?,?,?,?)`,
     );
 
-    const result = statement.run(body.name, body.age, body.country);
+    const result = statement.run(
+      body.title,
+      body.description,
+      body.publishedAt,
+      body.userId,
+    );
 
-    const user = db
-      .prepare("SELECT * FROM users WHERE id = ?")
+    const post = db
+      .prepare("SELECT * FROM posts WHERE id = ?")
       .get(result.lastInsertRowid);
 
-    responseBody = user;
+    responseBody = post;
     statusCode = 201;
 
     res.writeHead(statusCode, { "Content-Type": "application/json" });
@@ -34,29 +39,28 @@ export function createUser(req, res) {
   });
 }
 
-//BUSCAR O UTILIZADOR COM SQL
-export function findUsers(req, res) {
-  const users = db.prepare("SELECT * FROM users").all();
+//BUSCAR O UTILIZADORES/LISTAR TODOS POSTS
+export function findPosts(req, res) {
+  const posts = db.prepare("SELECT * FROM posts").all();
 
   res.writeHead(200, { "Content-Type": "application/json" });
 
-  res.end(JSON.stringify(users));
+  res.end(JSON.stringify(posts));
 }
 
 //BUSCAR PELO ID
-export function findUserById(req, res) {
+export function findPostsById(req, res) {
   const id = Number(req.url.split("/").at(-1));
+  const post = db.prepare("SELECT * FROM posts WHERE id = ?").get(id);
 
-  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(id);
-
-  if (!user) {
+  if (!post) {
     res.writeHead(404, {
       "Content-Type": "application/json",
     });
 
     res.end(
       JSON.stringify({
-        message: `Usuario com id ${id} nao foi encontrado`,
+        message: `Post com id ${id} nao foi encontrado`,
       }),
     );
 
@@ -67,11 +71,11 @@ export function findUserById(req, res) {
     "Content-Type": "application/json",
   });
 
-  res.end(JSON.stringify(user));
+  res.end(JSON.stringify(post));
 }
 
 //UPDATE
-export function updateUser(req, res) {
+export function updatePosts(req, res) {
   const id = Number(req.url.split("/").at(-1));
   let responseBody = null;
 
@@ -83,18 +87,19 @@ export function updateUser(req, res) {
 
   req.on("end", () => {
     const content = Buffer.concat(bodyParts).toString();
+
     const body = JSON.parse(content);
 
-    const user = db.prepare("SELECT * FROM users WHERE id = ?").get(id);
+    const post = db.prepare("SELECT * FROM posts WHERE id = ?").get(id);
 
-    if (!user) {
+    if (!post) {
       res.writeHead(404, {
         "Content-Type": "application/json",
       });
 
       res.end(
         JSON.stringify({
-          message: "Usuário não encontrado",
+          message: "Post não encontrado",
         }),
       );
 
@@ -103,26 +108,26 @@ export function updateUser(req, res) {
 
     db.prepare(
       `
-      UPDATE users
-      SET name = ?, age = ?, country = ?
+      UPDATE posts
+      SET title = ?, description = ?, publishedAt = ?, userId = ?
       WHERE id = ? `,
-    ).run(body.name, body.age, body.country, id);
+    ).run(body.title, body.description, body.publishedAt, body.userId, id);
 
-    const updatedUser = db.prepare("SELECT * FROM users WHERE id = ?").get(id);
+    const updatedPost = db.prepare("SELECT * FROM posts WHERE id = ?").get(id);
 
     res.writeHead(200, {
       "Content-Type": "application/json",
     });
 
-    res.end(JSON.stringify(updatedUser));
+    res.end(JSON.stringify(updatedPost));
   });
 }
 
-//E DELETE
-export function deleteUser(req, res) {
+//DELETE POSTS
+export function deletePosts(req, res) {
   const id = Number(req.url.split("/").at(-1));
 
-  const result = db.prepare("DELETE FROM users WHERE id = ?").run(id);
+  const result = db.prepare("DELETE FROM posts WHERE id = ?").run(id);
 
   if (result.changes === 0) {
     res.writeHead(404, {
@@ -131,7 +136,7 @@ export function deleteUser(req, res) {
 
     res.end(
       JSON.stringify({
-        message: "Usuário não encontrado",
+        message: "Post não encontrado",
       }),
     );
 
